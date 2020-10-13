@@ -14,10 +14,7 @@ For exmple:
 main.py TLS --tlsversion=TLS1_1 --exclude=Cluster0,Cluster1
 ```
 
-
-
-
-## Atlas Configuraation 
+## Atlas Configuration 
 ```python
 from os import getenv
 
