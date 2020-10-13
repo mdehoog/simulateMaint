@@ -72,7 +72,6 @@ class ProjectToScale(object):
         self.a = Atlas(ATLAS_USER, ATLAS_KEY, ATLAS_GROUP)
         self.cluster_list = None
         try:
-            pprint(exclude)
             self.exclude_list = [item.strip() for item in args.exclude[0].split(',')]
         except Exception as e:
             raise e
@@ -96,7 +95,7 @@ class ProjectToScale(object):
                 if cluster.providerSettings.instance_size_name not in [InstanceSizeName.M0, InstanceSizeName.M2,
                                                                        InstanceSizeName.M5] \
                         and cluster.state_name == ClusterStates.IDLE:
-                    print(f"Cluster name: {cluster.name}... exclude list: {self.exclude_list}")
+                    #print(f"Cluster name: {cluster.name}... exclude list: {self.exclude_list}")
                     if cluster.name in self.exclude_list:
                         print(f"Not adding {cluster.name} to the list of clusters to be processed.")
                     else:
@@ -152,7 +151,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if args.exclude is not None:
-        print(f'We recieved an exlude list with {len(args.exclude)} members, they will be excluded from the operation')
+        print(f'We received an exclude list with {len(args.exclude)} members, they will be excluded from the operation')
         print(args.exclude)
     project_to_scale = ProjectToScale(exclude=args.exclude)
     project_to_scale.get_clusters()
