@@ -139,10 +139,11 @@ class ProjectToScale(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Scale Up or scale down all clusters in an Atlas Project')
+    parser = argparse.ArgumentParser(description='Perform actions on all clusters in an Atlas Project which'
+                                                 ' simulate maintenance')
 
     parser.add_argument('Action', type=Actions, choices=list(Actions),
-                        help='Scale up or down (UP or DOWN)')
+                        help='The action to take, either scale up one step, scale down one step, or set TLS min. version.')
     parser.add_argument('--secs', type=int, help='The number of seconds to delay between clusters', default=1)
 
     parser.add_argument('--tlsversion', help='The TLS version to set on all clusters.',
