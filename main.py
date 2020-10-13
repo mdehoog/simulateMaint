@@ -71,11 +71,17 @@ class ProjectToScale(object):
     def __init__(self,exclude: Optional[List[str]]):
         self.a = Atlas(ATLAS_USER, ATLAS_KEY, ATLAS_GROUP)
         self.cluster_list = None
-        self.exclude_list = exclude
+        try:
+            pprint(exclude)
+            self.exclude_list = [item.strip() for item in args.exclude[0].split(',')]
+        except Exception as e:
+            raise e
+            self.exclude_list = None
 
     def get_clusters(self) -> List[ClusterToScale]:
         self.cluster_list = []
         if self.exclude_list is None:
+            print("No exclude list")
             for each_cluster in self.a.Clusters.get_all_clusters(iterable=True):
                 cluster = ClusterConfig.fill_from_dict(each_cluster)
                 if cluster.providerSettings.instance_size_name not in [InstanceSizeName.M0, InstanceSizeName.M2,
@@ -84,13 +90,19 @@ class ProjectToScale(object):
                     scale_cluster = ClusterToScale(each_cluster)
                     self.cluster_list.append(scale_cluster)
         else:
+            print(f"Processing exclude list")
             for each_cluster in self.a.Clusters.get_all_clusters(iterable=True):
                 cluster = ClusterConfig.fill_from_dict(each_cluster)
                 if cluster.providerSettings.instance_size_name not in [InstanceSizeName.M0, InstanceSizeName.M2,
                                                                        InstanceSizeName.M5] \
-                        and cluster.state_name == ClusterStates.IDLE and cluster.name not in self.exclude_list:
-                    scale_cluster = ClusterToScale(each_cluster)
-                    self.cluster_list.append(scale_cluster)
+                        and cluster.state_name == ClusterStates.IDLE:
+                    print(f"Cluster name: {cluster.name}... exclude list: {self.exclude_list}")
+                    if cluster.name in self.exclude_list:
+                        print(f"Not adding {cluster.name} to the list of clusters to be processed.")
+                    else:
+                        scale_cluster = ClusterToScale(each_cluster)
+                        self.cluster_list.append(scale_cluster)
+            print(f"The cluster list now has {len(self.cluster_list)} members")
         return self.cluster_list
 
     def scale_all_up(self, delay_secs: int = 4):
@@ -125,7 +137,6 @@ class ProjectToScale(object):
 
         for each_cluster in self.cluster_list:
             result = self.a.Clusters.modify_cluster_tls(each_cluster.name, TLS_protocol=tls_version)
-            pprint(result.__dict__)
 
 
 if __name__ == '__main__':
@@ -153,6 +164,6 @@ if __name__ == '__main__':
         project_to_scale.scale_all_down(delay_secs=args.secs)
 
     if args.Action == Actions.TLS:
-        pprint(f'Setting all clusters to TLS : {args.tlsversion}')
+        pprint(f'Setting {len(project_to_scale.cluster_list)} clusters to TLS : {args.tlsversion}')
         project_to_scale.change_tls_min(args.tlsversion)
 
